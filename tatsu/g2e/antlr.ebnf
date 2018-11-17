@@ -7,7 +7,7 @@
 *)
 
 @@comments :: ?'/\*(?:.|\n)*?\*/'
-@@eol_comments :: ?'//[^\n]*?\n'
+@@eol_comments :: ?'(?://|#)[^\n]*?\n'
 
 
 start
