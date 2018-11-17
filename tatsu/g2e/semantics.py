@@ -6,6 +6,7 @@ import re
 from itertools import chain
 
 from tatsu.ast import AST
+from tatsu.util import check_re_pattern
 from tatsu import grammars as model
 
 
@@ -104,7 +105,7 @@ class ANTLRSemantics(object):
 
     def regexp(self, ast):
         pattern = ''.join(ast)
-        re.compile(pattern)
+        check_re_pattern(pattern)
         return model.Pattern(pattern)
 
     def charset_optional(self, ast):
@@ -137,17 +138,17 @@ class ANTLRSemantics(object):
 
     def newranges(self, ast):
         pattern = ''.join(ast)
-        re.compile(pattern)
+        check_re_pattern(pattern)
         return model.Pattern(pattern)
 
     def newrange(self, ast):
         pattern = '[%s]%s' % (ast.range, ast.repeat or '')
-        re.compile(pattern)
+        check_re_pattern(pattern)
         return pattern
 
     def negative_newrange(self, ast):
         pattern = '[^%s]%s' % (ast.range, ast.repeat or '')
-        re.compile(pattern)
+        check_re_pattern(pattern)
         return pattern
 
     def rule_ref(self, ast):

@@ -7,7 +7,7 @@ from collections import defaultdict, Mapping
 from copy import copy
 
 from tatsu.util import indent, trim, ustr, urepr, strtype, compress_seq, chunks
-from tatsu.util import re
+from tatsu.util import re, check_re_pattern
 from tatsu.exceptions import FailedRef, GrammarError
 from tatsu.ast import AST
 from tatsu.contexts import ParseContext
@@ -291,7 +291,7 @@ class Pattern(Model):
         if not isinstance(ast, list):
             ast = [ast]
         self.patterns = ast
-        re.compile(self.pattern)
+        check_re_pattern(self.pattern)
 
     @property
     def pattern(self):

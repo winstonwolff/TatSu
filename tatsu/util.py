@@ -383,3 +383,10 @@ def right_assoc(elements):
             return (op, left, assoc(it))
 
     return assoc(iter(elements))
+
+
+def check_re_pattern(pattern):
+    try:
+        re.compile(pattern)
+    except Exception as e:
+        warning('could not compile pattern %r (%s)', pattern, e)
