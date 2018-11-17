@@ -29,4 +29,13 @@ class JavaScriptModelBuilderSemantics(ModelBuilderSemantics):
         super(JavaScriptModelBuilderSemantics, self).__init__(context=context, types=types)
 
 
+class Integer(ModelBase):
+    value = None
 
+
+class Float(ModelBase):
+    value = None
+
+
+class HexFloat(ModelBase):
+    value = None

@@ -130,6 +130,12 @@ class JavaScriptParser(Parser):
 
     @tatsumasu()
     def _program_(self):  # noqa
+        with self._optional():
+            self._token('"')
+            self._token('use')
+            self._token('strict')
+            self._token('"')
+            self._token(';')
         self._source_elements_()
 
     @tatsumasu()
@@ -211,7 +217,7 @@ class JavaScriptParser(Parser):
         with self._group():
             with self._choice():
                 with self._option():
-                    self._IDENTIFIER_()
+                    self._identifier_()
                 with self._option():
                     self._array_literal_()
                 with self._option():
@@ -293,7 +299,7 @@ class JavaScriptParser(Parser):
                         with self._option():
                             self._token('in')
                         with self._option():
-                            self._IDENTIFIER_()
+                            self._identifier_()
                         self._error('no available options')
                 self._expression_sequence_()
                 self._token(')')
@@ -308,7 +314,7 @@ class JavaScriptParser(Parser):
                         with self._option():
                             self._token('in')
                         with self._option():
-                            self._IDENTIFIER_()
+                            self._identifier_()
                         self._error('no available options')
                 self._expression_sequence_()
                 self._token(')')
@@ -330,14 +336,14 @@ class JavaScriptParser(Parser):
     def _continue_statement_(self):  # noqa
         self._token('continue')
         with self._optional():
-            self._IDENTIFIER_()
+            self._identifier_()
         self._eos_()
 
     @tatsumasu()
     def _break_statement_(self):  # noqa
         self._token('break')
         with self._optional():
-            self._IDENTIFIER_()
+            self._identifier_()
         self._eos_()
 
     @tatsumasu()
@@ -398,7 +404,7 @@ class JavaScriptParser(Parser):
 
     @tatsumasu()
     def _labelled_statement_(self):  # noqa
-        self._IDENTIFIER_()
+        self._identifier_()
         self._token(':')
         self._statement_()
 
@@ -426,7 +432,7 @@ class JavaScriptParser(Parser):
     def _catch_production_(self):  # noqa
         self._token('catch')
         self._token('(')
-        self._IDENTIFIER_()
+        self._identifier_()
         self._token(')')
         self._block_()
 
@@ -443,7 +449,7 @@ class JavaScriptParser(Parser):
     @tatsumasu()
     def _function_declaration_(self):  # noqa
         self._token('function')
-        self._IDENTIFIER_()
+        self._identifier_()
         self._token('(')
         with self._optional():
             self._formal_parameter_list_()
@@ -455,7 +461,7 @@ class JavaScriptParser(Parser):
     @tatsumasu()
     def _class_declaration_(self):  # noqa
         self._token('class')
-        self._IDENTIFIER_()
+        self._identifier_()
         self._class_tail_()
 
     @tatsumasu()
@@ -479,7 +485,7 @@ class JavaScriptParser(Parser):
                         with self._option():
                             self._token('static')
                         with self._option():
-                            self._IDENTIFIER_()
+                            self._identifier_()
                         self._error('no available options')
                 self._method_definition_()
             with self._option():
@@ -522,7 +528,7 @@ class JavaScriptParser(Parser):
     def _generator_method_(self):  # noqa
         with self._optional():
             self._token('*')
-        self._IDENTIFIER_()
+        self._identifier_()
         self._token('(')
         with self._optional():
             self._formal_parameter_list_()
@@ -554,7 +560,7 @@ class JavaScriptParser(Parser):
 
     @tatsumasu()
     def _formal_parameter_arg_(self):  # noqa
-        self._IDENTIFIER_()
+        self._identifier_()
         with self._optional():
             self._token('=')
             self._single_expression_()
@@ -562,7 +568,7 @@ class JavaScriptParser(Parser):
     @tatsumasu()
     def _last_formal_parameter_arg_(self):  # noqa
         self._token('...')
-        self._IDENTIFIER_()
+        self._identifier_()
 
     @tatsumasu()
     def _function_body_(self):  # noqa
@@ -616,7 +622,7 @@ class JavaScriptParser(Parser):
     @tatsumasu()
     def _last_element_(self):  # noqa
         self._token('...')
-        self._IDENTIFIER_()
+        self._identifier_()
 
     @tatsumasu()
     def _object_literal_(self):  # noqa
@@ -655,7 +661,7 @@ class JavaScriptParser(Parser):
             with self._option():
                 self._setter_()
                 self._token('(')
-                self._IDENTIFIER_()
+                self._identifier_()
                 self._token(')')
                 self._token('{')
                 self._function_body_()
@@ -663,7 +669,7 @@ class JavaScriptParser(Parser):
             with self._option():
                 self._generator_method_()
             with self._option():
-                self._IDENTIFIER_()
+                self._identifier_()
             self._error('no available options')
 
     @tatsumasu()
@@ -700,16 +706,17 @@ class JavaScriptParser(Parser):
     @tatsumasu()
     def _last_argument_(self):  # noqa
         self._token('...')
-        self._IDENTIFIER_()
+        self._identifier_()
 
     @tatsumasu()
     def _expression_sequence_(self):  # noqa
-        self._single_expression_()
+
+        def sep0():
+            self._token(',')
 
         def block0():
-            self._token(',')
             self._single_expression_()
-        self._closure(block0)
+        self._gather(block0, sep0)
 
     @tatsumasu()
     def _single_expression_(self):  # noqa
@@ -717,7 +724,7 @@ class JavaScriptParser(Parser):
             with self._option():
                 self._token('function')
                 with self._optional():
-                    self._IDENTIFIER_()
+                    self._identifier_()
                 self._token('(')
                 with self._optional():
                     self._formal_parameter_list_()
@@ -728,7 +735,7 @@ class JavaScriptParser(Parser):
             with self._option():
                 self._token('class')
                 with self._optional():
-                    self._IDENTIFIER_()
+                    self._identifier_()
                 self._class_tail_()
             with self._option():
                 self._single_expression_()
@@ -810,6 +817,10 @@ class JavaScriptParser(Parser):
                             self._token('<=')
                         with self._option():
                             self._token('>=')
+                        with self._option():
+                            self._token('>')
+                        with self._option():
+                            self._token('<')
                         self._error('no available options')
                 self._single_expression_()
             with self._option():
@@ -874,7 +885,7 @@ class JavaScriptParser(Parser):
             with self._option():
                 self._token('this')
             with self._option():
-                self._IDENTIFIER_()
+                self._identifier_()
             with self._option():
                 self._token('super')
             with self._option():
@@ -897,7 +908,7 @@ class JavaScriptParser(Parser):
     def _arrow_function_parameters_(self):  # noqa
         with self._choice():
             with self._option():
-                self._IDENTIFIER_()
+                self._identifier_()
             with self._option():
                 self._token('(')
                 with self._optional():
@@ -947,7 +958,7 @@ class JavaScriptParser(Parser):
     def _literal_(self):  # noqa
         with self._choice():
             with self._option():
-                self._token('null')
+                self._null_()
             with self._option():
                 self._boolean_literal_()
             with self._option():
@@ -961,25 +972,24 @@ class JavaScriptParser(Parser):
             self._error('no available options')
 
     @tatsumasu()
+    def _null_(self):  # noqa
+        self._token('null')
+        self._cut()
+
+    @tatsumasu()
     def _numeric_literal_(self):  # noqa
         with self._choice():
             with self._option():
-                self._decimal_literal_()
+                self._floating_point_literal_()
             with self._option():
-                self._HEX_INTEGER_LITERAL_()
-            with self._option():
-                self._OCTAL_INTEGER_LITERAL_()
-            with self._option():
-                self._OCTAL_INTEGER_LITERAL2_()
-            with self._option():
-                self._BINARY_INTEGER_LITERAL_()
+                self._integer_literal_()
             self._error('no available options')
 
     @tatsumasu()
     def _identifier_name_(self):  # noqa
         with self._choice():
             with self._option():
-                self._IDENTIFIER_()
+                self._identifier_()
             with self._option():
                 self._reserved_word_()
             self._error('no available options')
@@ -1086,12 +1096,12 @@ class JavaScriptParser(Parser):
 
     @tatsumasu()
     def _getter_(self):  # noqa
-        self._IDENTIFIER_()
+        self._identifier_()
         self._property_name_()
 
     @tatsumasu()
     def _setter_(self):  # noqa
-        self._IDENTIFIER_()
+        self._identifier_()
         self._property_name_()
 
     @tatsumasu()
@@ -1115,10 +1125,7 @@ class JavaScriptParser(Parser):
             self._REGULAR_EXPRESSION_CHAR_()
         self._positive_closure(block0)
         self._token('/')
-
-        def block1():
-            self._IDENTIFIER_PART_()
-        self._closure(block1)
+        self._pattern('(?:[\\w\\d]|\\\\u[\\dA-Fa-f]{4})*')
 
     @tatsumasu()
     def _boolean_literal_(self):  # noqa
@@ -1129,72 +1136,96 @@ class JavaScriptParser(Parser):
                 self._token('false')
             self._error('no available options')
 
+    @tatsumasu('Integer')
+    def _integer_literal_(self):  # noqa
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._hex_integer_literal_()
+                with self._option():
+                    self._octal_integer_literal_()
+                with self._option():
+                    self._binary_integer_literal_()
+                with self._option():
+                    self._decimal_integer_literal_()
+                self._error('no available options')
+        self.name_last_node('value')
+        self.ast._define(
+            ['value'],
+            []
+        )
+
     @tatsumasu()
-    def _decimal_literal_(self):  # noqa
+    def _decimal_integer_literal_(self):  # noqa
+        self._pattern('(0|[1-9]([_]*[0-9])*)[lL]?')
+
+    @tatsumasu()
+    def _hex_integer_literal_(self):  # noqa
+        self._pattern('0[xX][0-9a-fA-F]([_]*[0-9a-fA-F])*[lL]?')
+
+    @tatsumasu()
+    def _octal_integer_literal_(self):  # noqa
+        self._pattern('0[_]*[0-7]([_]*[0-7])*[lL]?')
+
+    @tatsumasu()
+    def _binary_integer_literal_(self):  # noqa
+        self._pattern('0[bB][01]([01_]*[01])*[lL]?')
+
+    @tatsumasu()
+    def _floating_point_literal_(self):  # noqa
         with self._choice():
             with self._option():
-                self._DECIMAL_INTEGER_LITERAL_()
-                self._token('.')
-                self._pattern('[0-9]*')
-                with self._optional():
-                    self._EXPONENT_PART_()
+                self._decimal_floating_point_literal_()
             with self._option():
-                self._token('.')
-                self._pattern('[0-9]+')
-                with self._optional():
-                    self._EXPONENT_PART_()
-            with self._option():
-                self._DECIMAL_INTEGER_LITERAL_()
-                with self._optional():
-                    self._EXPONENT_PART_()
+                self._hexadecimal_floating_point_literal_()
             self._error('no available options')
 
-    @tatsumasu()
-    def _HEX_INTEGER_LITERAL_(self):  # noqa
-        self._token('0')
-        self._pattern('[xX]')
+    @tatsumasu('Float')
+    def _decimal_floating_point_literal_(self):  # noqa
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._pattern('[0-9][0-9_]*[.][0-9]*([eE][-+]?[0-9]+)?[fFdD]?')
+                with self._option():
+                    self._pattern('[.][0-9]+([eE][-+]?[0-9]+)?[fFdD]?')
+                with self._option():
+                    self._pattern('[0-9][0-9_]*[eE][-+]?[0-9]+[fFdD]?')
+                with self._option():
+                    self._pattern('[0-9][0-9_]*[fFdD]')
+                self._error('no available options')
+        self.name_last_node('value')
+        self.ast._define(
+            ['value'],
+            []
+        )
 
-        def block0():
-            self._HEX_DIGIT_()
-        self._positive_closure(block0)
+    @tatsumasu('HexFloat')
+    def _hexadecimal_floating_point_literal_(self):  # noqa
+        self._pattern('0[xX][0-9a-fA-F]([_]*[0-9a-fA-F])*([.][0-9a-fA-F]*)?[pP][-+]?[0-9]+[fFdD]?')
+        self.name_last_node('value')
+        self.ast._define(
+            ['value'],
+            []
+        )
 
     @tatsumasu()
-    def _OCTAL_INTEGER_LITERAL_(self):  # noqa
-        self._token('0')
-        self._pattern('[0-7]+')
-
-    @tatsumasu()
-    def _OCTAL_INTEGER_LITERAL2_(self):  # noqa
-        self._token('0')
-        self._pattern('[oO][0-7]+')
-
-    @tatsumasu()
-    def _BINARY_INTEGER_LITERAL_(self):  # noqa
-        self._token('0')
-        self._pattern('[bB][01]+')
+    def _identifier_(self):  # noqa
+        self._IDENTIFIER_()
 
     @tatsumasu()
     def _IDENTIFIER_(self):  # noqa
-        self._IDENTIFIER_START_()
-
-        def block0():
-            self._IDENTIFIER_PART_()
-        self._closure(block0)
+        self._pattern('[\\w$](?:[\\w\\d]|\\\\u[\\dA-Fa-f]{4})*')
 
     @tatsumasu()
     def _string_literal_(self):  # noqa
-        with self._group():
-            self._token('"')
-
-            def block0():
-                self._DOUBLE_STRING_CHARACTER_()
-            self._closure(block0)
-            self._pattern('["\\\']')
-
-            def block1():
-                self._SINGLE_STRING_CHARACTER_()
-            self._closure(block1)
-            self._token("\\'")
+        self._token('"')
+        self._pattern('([^"\\n\\r\\\\]|\\\\[btnfr"\'\\\\]|\\\\[0-7]{1,3}|\\\\u[0-9a-fA-F]{4})*')
+        self.name_last_node('value')
+        self._token('"')
+        self.ast._define(
+            ['value'],
+            []
+        )
 
     @tatsumasu()
     def _TEMPLATE_STRING_LITERAL_(self):  # noqa
@@ -1225,948 +1256,6 @@ class JavaScriptParser(Parser):
         with self._optional():
             self._pattern('\\w+|\\S+')
         self._token(']]>')
-
-    @tatsumasu()
-    def _DOUBLE_STRING_CHARACTER_(self):  # noqa
-        with self._choice():
-            with self._option():
-                with self._ifnot():
-                    self._pattern('["\\\\\\r\\n]')
-                self._pattern('.')
-            with self._option():
-                self._token('\\\\')
-                self._ESCAPE_SEQUENCE_()
-            with self._option():
-                self._LINE_CONTINUATION_()
-            self._error('no available options')
-
-    @tatsumasu()
-    def _SINGLE_STRING_CHARACTER_(self):  # noqa
-        with self._choice():
-            with self._option():
-                with self._ifnot():
-                    self._pattern("['\\\\\\r\\n]")
-                self._pattern('.')
-            with self._option():
-                self._token('\\\\')
-                self._ESCAPE_SEQUENCE_()
-            with self._option():
-                self._LINE_CONTINUATION_()
-            self._error('no available options')
-
-    @tatsumasu()
-    def _ESCAPE_SEQUENCE_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._CHARACTER_ESCAPE_SEQUENCE_()
-            with self._option():
-                self._token('0')
-            with self._option():
-                self._HEX_ESCAPE_SEQUENCE_()
-            with self._option():
-                self._UNICODE_ESCAPE_SEQUENCE_()
-            with self._option():
-                self._EXTENDED_UNICODE_ESCAPE_SEQUENCE_()
-            self._error('no available options')
-
-    @tatsumasu()
-    def _CHARACTER_ESCAPE_SEQUENCE_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._SINGLE_ESCAPE_CHARACTER_()
-            with self._option():
-                self._NON_ESCAPE_CHARACTER_()
-            self._error('no available options')
-
-    @tatsumasu()
-    def _HEX_ESCAPE_SEQUENCE_(self):  # noqa
-        self._token('x')
-        self._HEX_DIGIT_()
-        self._HEX_DIGIT_()
-
-    @tatsumasu()
-    def _UNICODE_ESCAPE_SEQUENCE_(self):  # noqa
-        self._token('u')
-        self._HEX_DIGIT_()
-        self._HEX_DIGIT_()
-        self._HEX_DIGIT_()
-        self._HEX_DIGIT_()
-
-    @tatsumasu()
-    def _EXTENDED_UNICODE_ESCAPE_SEQUENCE_(self):  # noqa
-        self._token('u')
-        self._token('{')
-
-        def block0():
-            self._HEX_DIGIT_()
-        self._positive_closure(block0)
-        self._token('}')
-
-    @tatsumasu()
-    def _SINGLE_ESCAPE_CHARACTER_(self):  # noqa
-        self._pattern('[\'"\\\\bfnrtv]')
-
-    @tatsumasu()
-    def _NON_ESCAPE_CHARACTER_(self):  # noqa
-        with self._ifnot():
-            self._pattern('[\'"\\\\bfnrtv0-9xu\\r\\n]')
-        self._pattern('.')
-
-    @tatsumasu()
-    def _ESCAPE_CHARACTER_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._SINGLE_ESCAPE_CHARACTER_()
-            with self._option():
-                self._pattern('[0-9]')
-            with self._option():
-                self._pattern('[xu]')
-            self._error('no available options')
-
-    @tatsumasu()
-    def _LINE_CONTINUATION_(self):  # noqa
-        self._token('\\\\')
-        self._pattern('[\\r\\n\\u2028\\u2029]')
-
-    @tatsumasu()
-    def _HEX_DIGIT_(self):  # noqa
-        self._pattern('[0-9a-fA-F]')
-
-    @tatsumasu()
-    def _DECIMAL_INTEGER_LITERAL_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._token('0')
-            with self._option():
-                self._pattern('[1-9][0-9]*')
-            self._error('no available options')
-
-    @tatsumasu()
-    def _EXPONENT_PART_(self):  # noqa
-        self._pattern('[eE][+-]?[0-9]+')
-
-    @tatsumasu()
-    def _IDENTIFIER_PART_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._IDENTIFIER_START_()
-            with self._option():
-                self._UNICODE_COMBINING_MARK_()
-            with self._option():
-                self._UNICODE_DIGIT_()
-            with self._option():
-                self._UNICODE_CONNECTOR_PUNCTUATION_()
-            with self._option():
-                self._pattern('[\\u200C\\u200D]')
-            self._error('no available options')
-
-    @tatsumasu()
-    def _IDENTIFIER_START_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._UNICODE_LETTER_()
-            with self._option():
-                self._pattern('[$_]')
-            with self._option():
-                self._token('\\\\')
-                self._UNICODE_ESCAPE_SEQUENCE_()
-            self._error('no available options')
-
-    @tatsumasu()
-    def _UNICODE_LETTER_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._pattern('[\\u0041-\\u005A]')
-            with self._option():
-                self._pattern('[\\u0061-\\u007A]')
-            with self._option():
-                self._pattern('[\\u00AA]')
-            with self._option():
-                self._pattern('[\\u00B5]')
-            with self._option():
-                self._pattern('[\\u00BA]')
-            with self._option():
-                self._pattern('[\\u00C0-\\u00D6]')
-            with self._option():
-                self._pattern('[\\u00D8-\\u00F6]')
-            with self._option():
-                self._pattern('[\\u00F8-\\u021F]')
-            with self._option():
-                self._pattern('[\\u0222-\\u0233]')
-            with self._option():
-                self._pattern('[\\u0250-\\u02AD]')
-            with self._option():
-                self._pattern('[\\u02B0-\\u02B8]')
-            with self._option():
-                self._pattern('[\\u02BB-\\u02C1]')
-            with self._option():
-                self._pattern('[\\u02D0-\\u02D1]')
-            with self._option():
-                self._pattern('[\\u02E0-\\u02E4]')
-            with self._option():
-                self._pattern('[\\u02EE]')
-            with self._option():
-                self._pattern('[\\u037A]')
-            with self._option():
-                self._pattern('[\\u0386]')
-            with self._option():
-                self._pattern('[\\u0388-\\u038A]')
-            with self._option():
-                self._pattern('[\\u038C]')
-            with self._option():
-                self._pattern('[\\u038E-\\u03A1]')
-            with self._option():
-                self._pattern('[\\u03A3-\\u03CE]')
-            with self._option():
-                self._pattern('[\\u03D0-\\u03D7]')
-            with self._option():
-                self._pattern('[\\u03DA-\\u03F3]')
-            with self._option():
-                self._pattern('[\\u0400-\\u0481]')
-            with self._option():
-                self._pattern('[\\u048C-\\u04C4]')
-            with self._option():
-                self._pattern('[\\u04C7-\\u04C8]')
-            with self._option():
-                self._pattern('[\\u04CB-\\u04CC]')
-            with self._option():
-                self._pattern('[\\u04D0-\\u04F5]')
-            with self._option():
-                self._pattern('[\\u04F8-\\u04F9]')
-            with self._option():
-                self._pattern('[\\u0531-\\u0556]')
-            with self._option():
-                self._pattern('[\\u0559]')
-            with self._option():
-                self._pattern('[\\u0561-\\u0587]')
-            with self._option():
-                self._pattern('[\\u05D0-\\u05EA]')
-            with self._option():
-                self._pattern('[\\u05F0-\\u05F2]')
-            with self._option():
-                self._pattern('[\\u0621-\\u063A]')
-            with self._option():
-                self._pattern('[\\u0640-\\u064A]')
-            with self._option():
-                self._pattern('[\\u0671-\\u06D3]')
-            with self._option():
-                self._pattern('[\\u06D5]')
-            with self._option():
-                self._pattern('[\\u06E5-\\u06E6]')
-            with self._option():
-                self._pattern('[\\u06FA-\\u06FC]')
-            with self._option():
-                self._pattern('[\\u0710]')
-            with self._option():
-                self._pattern('[\\u0712-\\u072C]')
-            with self._option():
-                self._pattern('[\\u0780-\\u07A5]')
-            with self._option():
-                self._pattern('[\\u0905-\\u0939]')
-            with self._option():
-                self._pattern('[\\u093D]')
-            with self._option():
-                self._pattern('[\\u0950]')
-            with self._option():
-                self._pattern('[\\u0958-\\u0961]')
-            with self._option():
-                self._pattern('[\\u0985-\\u098C]')
-            with self._option():
-                self._pattern('[\\u098F-\\u0990]')
-            with self._option():
-                self._pattern('[\\u0993-\\u09A8]')
-            with self._option():
-                self._pattern('[\\u09AA-\\u09B0]')
-            with self._option():
-                self._pattern('[\\u09B2]')
-            with self._option():
-                self._pattern('[\\u09B6-\\u09B9]')
-            with self._option():
-                self._pattern('[\\u09DC-\\u09DD]')
-            with self._option():
-                self._pattern('[\\u09DF-\\u09E1]')
-            with self._option():
-                self._pattern('[\\u09F0-\\u09F1]')
-            with self._option():
-                self._pattern('[\\u0A05-\\u0A0A]')
-            with self._option():
-                self._pattern('[\\u0A0F-\\u0A10]')
-            with self._option():
-                self._pattern('[\\u0A13-\\u0A28]')
-            with self._option():
-                self._pattern('[\\u0A2A-\\u0A30]')
-            with self._option():
-                self._pattern('[\\u0A32-\\u0A33]')
-            with self._option():
-                self._pattern('[\\u0A35-\\u0A36]')
-            with self._option():
-                self._pattern('[\\u0A38-\\u0A39]')
-            with self._option():
-                self._pattern('[\\u0A59-\\u0A5C]')
-            with self._option():
-                self._pattern('[\\u0A5E]')
-            with self._option():
-                self._pattern('[\\u0A72-\\u0A74]')
-            with self._option():
-                self._pattern('[\\u0A85-\\u0A8B]')
-            with self._option():
-                self._pattern('[\\u0A8D]')
-            with self._option():
-                self._pattern('[\\u0A8F-\\u0A91]')
-            with self._option():
-                self._pattern('[\\u0A93-\\u0AA8]')
-            with self._option():
-                self._pattern('[\\u0AAA-\\u0AB0]')
-            with self._option():
-                self._pattern('[\\u0AB2-\\u0AB3]')
-            with self._option():
-                self._pattern('[\\u0AB5-\\u0AB9]')
-            with self._option():
-                self._pattern('[\\u0ABD]')
-            with self._option():
-                self._pattern('[\\u0AD0]')
-            with self._option():
-                self._pattern('[\\u0AE0]')
-            with self._option():
-                self._pattern('[\\u0B05-\\u0B0C]')
-            with self._option():
-                self._pattern('[\\u0B0F-\\u0B10]')
-            with self._option():
-                self._pattern('[\\u0B13-\\u0B28]')
-            with self._option():
-                self._pattern('[\\u0B2A-\\u0B30]')
-            with self._option():
-                self._pattern('[\\u0B32-\\u0B33]')
-            with self._option():
-                self._pattern('[\\u0B36-\\u0B39]')
-            with self._option():
-                self._pattern('[\\u0B3D]')
-            with self._option():
-                self._pattern('[\\u0B5C-\\u0B5D]')
-            with self._option():
-                self._pattern('[\\u0B5F-\\u0B61]')
-            with self._option():
-                self._pattern('[\\u0B85-\\u0B8A]')
-            with self._option():
-                self._pattern('[\\u0B8E-\\u0B90]')
-            with self._option():
-                self._pattern('[\\u0B92-\\u0B95]')
-            with self._option():
-                self._pattern('[\\u0B99-\\u0B9A]')
-            with self._option():
-                self._pattern('[\\u0B9C]')
-            with self._option():
-                self._pattern('[\\u0B9E-\\u0B9F]')
-            with self._option():
-                self._pattern('[\\u0BA3-\\u0BA4]')
-            with self._option():
-                self._pattern('[\\u0BA8-\\u0BAA]')
-            with self._option():
-                self._pattern('[\\u0BAE-\\u0BB5]')
-            with self._option():
-                self._pattern('[\\u0BB7-\\u0BB9]')
-            with self._option():
-                self._pattern('[\\u0C05-\\u0C0C]')
-            with self._option():
-                self._pattern('[\\u0C0E-\\u0C10]')
-            with self._option():
-                self._pattern('[\\u0C12-\\u0C28]')
-            with self._option():
-                self._pattern('[\\u0C2A-\\u0C33]')
-            with self._option():
-                self._pattern('[\\u0C35-\\u0C39]')
-            with self._option():
-                self._pattern('[\\u0C60-\\u0C61]')
-            with self._option():
-                self._pattern('[\\u0C85-\\u0C8C]')
-            with self._option():
-                self._pattern('[\\u0C8E-\\u0C90]')
-            with self._option():
-                self._pattern('[\\u0C92-\\u0CA8]')
-            with self._option():
-                self._pattern('[\\u0CAA-\\u0CB3]')
-            with self._option():
-                self._pattern('[\\u0CB5-\\u0CB9]')
-            with self._option():
-                self._pattern('[\\u0CDE]')
-            with self._option():
-                self._pattern('[\\u0CE0-\\u0CE1]')
-            with self._option():
-                self._pattern('[\\u0D05-\\u0D0C]')
-            with self._option():
-                self._pattern('[\\u0D0E-\\u0D10]')
-            with self._option():
-                self._pattern('[\\u0D12-\\u0D28]')
-            with self._option():
-                self._pattern('[\\u0D2A-\\u0D39]')
-            with self._option():
-                self._pattern('[\\u0D60-\\u0D61]')
-            with self._option():
-                self._pattern('[\\u0D85-\\u0D96]')
-            with self._option():
-                self._pattern('[\\u0D9A-\\u0DB1]')
-            with self._option():
-                self._pattern('[\\u0DB3-\\u0DBB]')
-            with self._option():
-                self._pattern('[\\u0DBD]')
-            with self._option():
-                self._pattern('[\\u0DC0-\\u0DC6]')
-            with self._option():
-                self._pattern('[\\u0E01-\\u0E30]')
-            with self._option():
-                self._pattern('[\\u0E32-\\u0E33]')
-            with self._option():
-                self._pattern('[\\u0E40-\\u0E46]')
-            with self._option():
-                self._pattern('[\\u0E81-\\u0E82]')
-            with self._option():
-                self._pattern('[\\u0E84]')
-            with self._option():
-                self._pattern('[\\u0E87-\\u0E88]')
-            with self._option():
-                self._pattern('[\\u0E8A]')
-            with self._option():
-                self._pattern('[\\u0E8D]')
-            with self._option():
-                self._pattern('[\\u0E94-\\u0E97]')
-            with self._option():
-                self._pattern('[\\u0E99-\\u0E9F]')
-            with self._option():
-                self._pattern('[\\u0EA1-\\u0EA3]')
-            with self._option():
-                self._pattern('[\\u0EA5]')
-            with self._option():
-                self._pattern('[\\u0EA7]')
-            with self._option():
-                self._pattern('[\\u0EAA-\\u0EAB]')
-            with self._option():
-                self._pattern('[\\u0EAD-\\u0EB0]')
-            with self._option():
-                self._pattern('[\\u0EB2-\\u0EB3]')
-            with self._option():
-                self._pattern('[\\u0EBD-\\u0EC4]')
-            with self._option():
-                self._pattern('[\\u0EC6]')
-            with self._option():
-                self._pattern('[\\u0EDC-\\u0EDD]')
-            with self._option():
-                self._pattern('[\\u0F00]')
-            with self._option():
-                self._pattern('[\\u0F40-\\u0F6A]')
-            with self._option():
-                self._pattern('[\\u0F88-\\u0F8B]')
-            with self._option():
-                self._pattern('[\\u1000-\\u1021]')
-            with self._option():
-                self._pattern('[\\u1023-\\u1027]')
-            with self._option():
-                self._pattern('[\\u1029-\\u102A]')
-            with self._option():
-                self._pattern('[\\u1050-\\u1055]')
-            with self._option():
-                self._pattern('[\\u10A0-\\u10C5]')
-            with self._option():
-                self._pattern('[\\u10D0-\\u10F6]')
-            with self._option():
-                self._pattern('[\\u1100-\\u1159]')
-            with self._option():
-                self._pattern('[\\u115F-\\u11A2]')
-            with self._option():
-                self._pattern('[\\u11A8-\\u11F9]')
-            with self._option():
-                self._pattern('[\\u1200-\\u1206]')
-            with self._option():
-                self._pattern('[\\u1208-\\u1246]')
-            with self._option():
-                self._pattern('[\\u1248]')
-            with self._option():
-                self._pattern('[\\u124A-\\u124D]')
-            with self._option():
-                self._pattern('[\\u1250-\\u1256]')
-            with self._option():
-                self._pattern('[\\u1258]')
-            with self._option():
-                self._pattern('[\\u125A-\\u125D]')
-            with self._option():
-                self._pattern('[\\u1260-\\u1286]')
-            with self._option():
-                self._pattern('[\\u1288]')
-            with self._option():
-                self._pattern('[\\u128A-\\u128D]')
-            with self._option():
-                self._pattern('[\\u1290-\\u12AE]')
-            with self._option():
-                self._pattern('[\\u12B0]')
-            with self._option():
-                self._pattern('[\\u12B2-\\u12B5]')
-            with self._option():
-                self._pattern('[\\u12B8-\\u12BE]')
-            with self._option():
-                self._pattern('[\\u12C0]')
-            with self._option():
-                self._pattern('[\\u12C2-\\u12C5]')
-            with self._option():
-                self._pattern('[\\u12C8-\\u12CE]')
-            with self._option():
-                self._pattern('[\\u12D0-\\u12D6]')
-            with self._option():
-                self._pattern('[\\u12D8-\\u12EE]')
-            with self._option():
-                self._pattern('[\\u12F0-\\u130E]')
-            with self._option():
-                self._pattern('[\\u1310]')
-            with self._option():
-                self._pattern('[\\u1312-\\u1315]')
-            with self._option():
-                self._pattern('[\\u1318-\\u131E]')
-            with self._option():
-                self._pattern('[\\u1320-\\u1346]')
-            with self._option():
-                self._pattern('[\\u1348-\\u135A]')
-            with self._option():
-                self._pattern('[\\u13A0-\\u13B0]')
-            with self._option():
-                self._pattern('[\\u13B1-\\u13F4]')
-            with self._option():
-                self._pattern('[\\u1401-\\u1676]')
-            with self._option():
-                self._pattern('[\\u1681-\\u169A]')
-            with self._option():
-                self._pattern('[\\u16A0-\\u16EA]')
-            with self._option():
-                self._pattern('[\\u1780-\\u17B3]')
-            with self._option():
-                self._pattern('[\\u1820-\\u1877]')
-            with self._option():
-                self._pattern('[\\u1880-\\u18A8]')
-            with self._option():
-                self._pattern('[\\u1E00-\\u1E9B]')
-            with self._option():
-                self._pattern('[\\u1EA0-\\u1EE0]')
-            with self._option():
-                self._pattern('[\\u1EE1-\\u1EF9]')
-            with self._option():
-                self._pattern('[\\u1F00-\\u1F15]')
-            with self._option():
-                self._pattern('[\\u1F18-\\u1F1D]')
-            with self._option():
-                self._pattern('[\\u1F20-\\u1F39]')
-            with self._option():
-                self._pattern('[\\u1F3A-\\u1F45]')
-            with self._option():
-                self._pattern('[\\u1F48-\\u1F4D]')
-            with self._option():
-                self._pattern('[\\u1F50-\\u1F57]')
-            with self._option():
-                self._pattern('[\\u1F59]')
-            with self._option():
-                self._pattern('[\\u1F5B]')
-            with self._option():
-                self._pattern('[\\u1F5D]')
-            with self._option():
-                self._pattern('[\\u1F5F-\\u1F7D]')
-            with self._option():
-                self._pattern('[\\u1F80-\\u1FB4]')
-            with self._option():
-                self._pattern('[\\u1FB6-\\u1FBC]')
-            with self._option():
-                self._pattern('[\\u1FBE]')
-            with self._option():
-                self._pattern('[\\u1FC2-\\u1FC4]')
-            with self._option():
-                self._pattern('[\\u1FC6-\\u1FCC]')
-            with self._option():
-                self._pattern('[\\u1FD0-\\u1FD3]')
-            with self._option():
-                self._pattern('[\\u1FD6-\\u1FDB]')
-            with self._option():
-                self._pattern('[\\u1FE0-\\u1FEC]')
-            with self._option():
-                self._pattern('[\\u1FF2-\\u1FF4]')
-            with self._option():
-                self._pattern('[\\u1FF6-\\u1FFC]')
-            with self._option():
-                self._pattern('[\\u207F]')
-            with self._option():
-                self._pattern('[\\u2102]')
-            with self._option():
-                self._pattern('[\\u2107]')
-            with self._option():
-                self._pattern('[\\u210A-\\u2113]')
-            with self._option():
-                self._pattern('[\\u2115]')
-            with self._option():
-                self._pattern('[\\u2119-\\u211D]')
-            with self._option():
-                self._pattern('[\\u2124]')
-            with self._option():
-                self._pattern('[\\u2126]')
-            with self._option():
-                self._pattern('[\\u2128]')
-            with self._option():
-                self._pattern('[\\u212A-\\u212D]')
-            with self._option():
-                self._pattern('[\\u212F-\\u2131]')
-            with self._option():
-                self._pattern('[\\u2133-\\u2139]')
-            with self._option():
-                self._pattern('[\\u2160-\\u2183]')
-            with self._option():
-                self._pattern('[\\u3005-\\u3007]')
-            with self._option():
-                self._pattern('[\\u3021-\\u3029]')
-            with self._option():
-                self._pattern('[\\u3031-\\u3035]')
-            with self._option():
-                self._pattern('[\\u3038-\\u303A]')
-            with self._option():
-                self._pattern('[\\u3041-\\u3094]')
-            with self._option():
-                self._pattern('[\\u309D-\\u309E]')
-            with self._option():
-                self._pattern('[\\u30A1-\\u30FA]')
-            with self._option():
-                self._pattern('[\\u30FC-\\u30FE]')
-            with self._option():
-                self._pattern('[\\u3105-\\u312C]')
-            with self._option():
-                self._pattern('[\\u3131-\\u318E]')
-            with self._option():
-                self._pattern('[\\u31A0-\\u31B7]')
-            with self._option():
-                self._pattern('[\\u3400]')
-            with self._option():
-                self._pattern('[\\u4DB5]')
-            with self._option():
-                self._pattern('[\\u4E00]')
-            with self._option():
-                self._pattern('[\\u9FA5]')
-            with self._option():
-                self._pattern('[\\uA000-\\uA48C]')
-            with self._option():
-                self._pattern('[\\uAC00]')
-            with self._option():
-                self._pattern('[\\uD7A3]')
-            with self._option():
-                self._pattern('[\\uF900-\\uFA2D]')
-            with self._option():
-                self._pattern('[\\uFB00-\\uFB06]')
-            with self._option():
-                self._pattern('[\\uFB13-\\uFB17]')
-            with self._option():
-                self._pattern('[\\uFB1D]')
-            with self._option():
-                self._pattern('[\\uFB1F-\\uFB28]')
-            with self._option():
-                self._pattern('[\\uFB2A-\\uFB36]')
-            with self._option():
-                self._pattern('[\\uFB38-\\uFB3C]')
-            with self._option():
-                self._pattern('[\\uFB3E]')
-            with self._option():
-                self._pattern('[\\uFB40-\\uFB41]')
-            with self._option():
-                self._pattern('[\\uFB43-\\uFB44]')
-            with self._option():
-                self._pattern('[\\uFB46-\\uFBB1]')
-            with self._option():
-                self._pattern('[\\uFBD3-\\uFD3D]')
-            with self._option():
-                self._pattern('[\\uFD50-\\uFD8F]')
-            with self._option():
-                self._pattern('[\\uFD92-\\uFDC7]')
-            with self._option():
-                self._pattern('[\\uFDF0-\\uFDFB]')
-            with self._option():
-                self._pattern('[\\uFE70-\\uFE72]')
-            with self._option():
-                self._pattern('[\\uFE74]')
-            with self._option():
-                self._pattern('[\\uFE76-\\uFEFC]')
-            with self._option():
-                self._pattern('[\\uFF21-\\uFF3A]')
-            with self._option():
-                self._pattern('[\\uFF41-\\uFF5A]')
-            with self._option():
-                self._pattern('[\\uFF66-\\uFFBE]')
-            with self._option():
-                self._pattern('[\\uFFC2-\\uFFC7]')
-            with self._option():
-                self._pattern('[\\uFFCA-\\uFFCF]')
-            with self._option():
-                self._pattern('[\\uFFD2-\\uFFD7]')
-            with self._option():
-                self._pattern('[\\uFFDA-\\uFFDC]')
-            self._error('no available options')
-
-    @tatsumasu()
-    def _UNICODE_COMBINING_MARK_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._pattern('[\\u0300-\\u034E]')
-            with self._option():
-                self._pattern('[\\u0360-\\u0362]')
-            with self._option():
-                self._pattern('[\\u0483-\\u0486]')
-            with self._option():
-                self._pattern('[\\u0591-\\u05A1]')
-            with self._option():
-                self._pattern('[\\u05A3-\\u05B9]')
-            with self._option():
-                self._pattern('[\\u05BB-\\u05BD]')
-            with self._option():
-                self._pattern('[\\u05BF]')
-            with self._option():
-                self._pattern('[\\u05C1-\\u05C2]')
-            with self._option():
-                self._pattern('[\\u05C4]')
-            with self._option():
-                self._pattern('[\\u064B-\\u0655]')
-            with self._option():
-                self._pattern('[\\u0670]')
-            with self._option():
-                self._pattern('[\\u06D6-\\u06DC]')
-            with self._option():
-                self._pattern('[\\u06DF-\\u06E4]')
-            with self._option():
-                self._pattern('[\\u06E7-\\u06E8]')
-            with self._option():
-                self._pattern('[\\u06EA-\\u06ED]')
-            with self._option():
-                self._pattern('[\\u0711]')
-            with self._option():
-                self._pattern('[\\u0730-\\u074A]')
-            with self._option():
-                self._pattern('[\\u07A6-\\u07B0]')
-            with self._option():
-                self._pattern('[\\u0901-\\u0903]')
-            with self._option():
-                self._pattern('[\\u093C]')
-            with self._option():
-                self._pattern('[\\u093E-\\u094D]')
-            with self._option():
-                self._pattern('[\\u0951-\\u0954]')
-            with self._option():
-                self._pattern('[\\u0962-\\u0963]')
-            with self._option():
-                self._pattern('[\\u0981-\\u0983]')
-            with self._option():
-                self._pattern('[\\u09BC-\\u09C4]')
-            with self._option():
-                self._pattern('[\\u09C7-\\u09C8]')
-            with self._option():
-                self._pattern('[\\u09CB-\\u09CD]')
-            with self._option():
-                self._pattern('[\\u09D7]')
-            with self._option():
-                self._pattern('[\\u09E2-\\u09E3]')
-            with self._option():
-                self._pattern('[\\u0A02]')
-            with self._option():
-                self._pattern('[\\u0A3C]')
-            with self._option():
-                self._pattern('[\\u0A3E-\\u0A42]')
-            with self._option():
-                self._pattern('[\\u0A47-\\u0A48]')
-            with self._option():
-                self._pattern('[\\u0A4B-\\u0A4D]')
-            with self._option():
-                self._pattern('[\\u0A70-\\u0A71]')
-            with self._option():
-                self._pattern('[\\u0A81-\\u0A83]')
-            with self._option():
-                self._pattern('[\\u0ABC]')
-            with self._option():
-                self._pattern('[\\u0ABE-\\u0AC5]')
-            with self._option():
-                self._pattern('[\\u0AC7-\\u0AC9]')
-            with self._option():
-                self._pattern('[\\u0ACB-\\u0ACD]')
-            with self._option():
-                self._pattern('[\\u0B01-\\u0B03]')
-            with self._option():
-                self._pattern('[\\u0B3C]')
-            with self._option():
-                self._pattern('[\\u0B3E-\\u0B43]')
-            with self._option():
-                self._pattern('[\\u0B47-\\u0B48]')
-            with self._option():
-                self._pattern('[\\u0B4B-\\u0B4D]')
-            with self._option():
-                self._pattern('[\\u0B56-\\u0B57]')
-            with self._option():
-                self._pattern('[\\u0B82-\\u0B83]')
-            with self._option():
-                self._pattern('[\\u0BBE-\\u0BC2]')
-            with self._option():
-                self._pattern('[\\u0BC6-\\u0BC8]')
-            with self._option():
-                self._pattern('[\\u0BCA-\\u0BCD]')
-            with self._option():
-                self._pattern('[\\u0BD7]')
-            with self._option():
-                self._pattern('[\\u0C01-\\u0C03]')
-            with self._option():
-                self._pattern('[\\u0C3E-\\u0C44]')
-            with self._option():
-                self._pattern('[\\u0C46-\\u0C48]')
-            with self._option():
-                self._pattern('[\\u0C4A-\\u0C4D]')
-            with self._option():
-                self._pattern('[\\u0C55-\\u0C56]')
-            with self._option():
-                self._pattern('[\\u0C82-\\u0C83]')
-            with self._option():
-                self._pattern('[\\u0CBE-\\u0CC4]')
-            with self._option():
-                self._pattern('[\\u0CC6-\\u0CC8]')
-            with self._option():
-                self._pattern('[\\u0CCA-\\u0CCD]')
-            with self._option():
-                self._pattern('[\\u0CD5-\\u0CD6]')
-            with self._option():
-                self._pattern('[\\u0D02-\\u0D03]')
-            with self._option():
-                self._pattern('[\\u0D3E-\\u0D43]')
-            with self._option():
-                self._pattern('[\\u0D46-\\u0D48]')
-            with self._option():
-                self._pattern('[\\u0D4A-\\u0D4D]')
-            with self._option():
-                self._pattern('[\\u0D57]')
-            with self._option():
-                self._pattern('[\\u0D82-\\u0D83]')
-            with self._option():
-                self._pattern('[\\u0DCA]')
-            with self._option():
-                self._pattern('[\\u0DCF-\\u0DD4]')
-            with self._option():
-                self._pattern('[\\u0DD6]')
-            with self._option():
-                self._pattern('[\\u0DD8-\\u0DDF]')
-            with self._option():
-                self._pattern('[\\u0DF2-\\u0DF3]')
-            with self._option():
-                self._pattern('[\\u0E31]')
-            with self._option():
-                self._pattern('[\\u0E34-\\u0E3A]')
-            with self._option():
-                self._pattern('[\\u0E47-\\u0E4E]')
-            with self._option():
-                self._pattern('[\\u0EB1]')
-            with self._option():
-                self._pattern('[\\u0EB4-\\u0EB9]')
-            with self._option():
-                self._pattern('[\\u0EBB-\\u0EBC]')
-            with self._option():
-                self._pattern('[\\u0EC8-\\u0ECD]')
-            with self._option():
-                self._pattern('[\\u0F18-\\u0F19]')
-            with self._option():
-                self._pattern('[\\u0F35]')
-            with self._option():
-                self._pattern('[\\u0F37]')
-            with self._option():
-                self._pattern('[\\u0F39]')
-            with self._option():
-                self._pattern('[\\u0F3E-\\u0F3F]')
-            with self._option():
-                self._pattern('[\\u0F71-\\u0F84]')
-            with self._option():
-                self._pattern('[\\u0F86-\\u0F87]')
-            with self._option():
-                self._pattern('[\\u0F90-\\u0F97]')
-            with self._option():
-                self._pattern('[\\u0F99-\\u0FBC]')
-            with self._option():
-                self._pattern('[\\u0FC6]')
-            with self._option():
-                self._pattern('[\\u102C-\\u1032]')
-            with self._option():
-                self._pattern('[\\u1036-\\u1039]')
-            with self._option():
-                self._pattern('[\\u1056-\\u1059]')
-            with self._option():
-                self._pattern('[\\u17B4-\\u17D3]')
-            with self._option():
-                self._pattern('[\\u18A9]')
-            with self._option():
-                self._pattern('[\\u20D0-\\u20DC]')
-            with self._option():
-                self._pattern('[\\u20E1]')
-            with self._option():
-                self._pattern('[\\u302A-\\u302F]')
-            with self._option():
-                self._pattern('[\\u3099-\\u309A]')
-            with self._option():
-                self._pattern('[\\uFB1E]')
-            with self._option():
-                self._pattern('[\\uFE20-\\uFE23]')
-            self._error('no available options')
-
-    @tatsumasu()
-    def _UNICODE_DIGIT_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._pattern('[\\u0030-\\u0039]')
-            with self._option():
-                self._pattern('[\\u0660-\\u0669]')
-            with self._option():
-                self._pattern('[\\u06F0-\\u06F9]')
-            with self._option():
-                self._pattern('[\\u0966-\\u096F]')
-            with self._option():
-                self._pattern('[\\u09E6-\\u09EF]')
-            with self._option():
-                self._pattern('[\\u0A66-\\u0A6F]')
-            with self._option():
-                self._pattern('[\\u0AE6-\\u0AEF]')
-            with self._option():
-                self._pattern('[\\u0B66-\\u0B6F]')
-            with self._option():
-                self._pattern('[\\u0BE7-\\u0BEF]')
-            with self._option():
-                self._pattern('[\\u0C66-\\u0C6F]')
-            with self._option():
-                self._pattern('[\\u0CE6-\\u0CEF]')
-            with self._option():
-                self._pattern('[\\u0D66-\\u0D6F]')
-            with self._option():
-                self._pattern('[\\u0E50-\\u0E59]')
-            with self._option():
-                self._pattern('[\\u0ED0-\\u0ED9]')
-            with self._option():
-                self._pattern('[\\u0F20-\\u0F29]')
-            with self._option():
-                self._pattern('[\\u1040-\\u1049]')
-            with self._option():
-                self._pattern('[\\u1369-\\u1371]')
-            with self._option():
-                self._pattern('[\\u17E0-\\u17E9]')
-            with self._option():
-                self._pattern('[\\u1810-\\u1819]')
-            with self._option():
-                self._pattern('[\\uFF10-\\uFF19]')
-            self._error('no available options')
-
-    @tatsumasu()
-    def _UNICODE_CONNECTOR_PUNCTUATION_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._pattern('[\\u005F]')
-            with self._option():
-                self._pattern('[\\u203F-\\u2040]')
-            with self._option():
-                self._pattern('[\\u30FB]')
-            with self._option():
-                self._pattern('[\\uFE33-\\uFE34]')
-            with self._option():
-                self._pattern('[\\uFE4D-\\uFE4F]')
-            with self._option():
-                self._pattern('[\\uFF3F]')
-            with self._option():
-                self._pattern('[\\uFF65]')
-            self._error('no available options')
 
     @tatsumasu()
     def _REGULAR_EXPRESSION_CHAR_(self):  # noqa
@@ -2368,6 +1457,9 @@ class JavaScriptSemantics(object):
     def literal(self, ast):  # noqa
         return ast
 
+    def null(self, ast):  # noqa
+        return ast
+
     def numeric_literal(self, ast):  # noqa
         return ast
 
@@ -2395,19 +1487,31 @@ class JavaScriptSemantics(object):
     def boolean_literal(self, ast):  # noqa
         return ast
 
-    def decimal_literal(self, ast):  # noqa
+    def integer_literal(self, ast):  # noqa
         return ast
 
-    def HEX_INTEGER_LITERAL(self, ast):  # noqa
+    def decimal_integer_literal(self, ast):  # noqa
         return ast
 
-    def OCTAL_INTEGER_LITERAL(self, ast):  # noqa
+    def hex_integer_literal(self, ast):  # noqa
         return ast
 
-    def OCTAL_INTEGER_LITERAL2(self, ast):  # noqa
+    def octal_integer_literal(self, ast):  # noqa
         return ast
 
-    def BINARY_INTEGER_LITERAL(self, ast):  # noqa
+    def binary_integer_literal(self, ast):  # noqa
+        return ast
+
+    def floating_point_literal(self, ast):  # noqa
+        return ast
+
+    def decimal_floating_point_literal(self, ast):  # noqa
+        return ast
+
+    def hexadecimal_floating_point_literal(self, ast):  # noqa
+        return ast
+
+    def identifier(self, ast):  # noqa
         return ast
 
     def IDENTIFIER(self, ast):  # noqa
@@ -2423,66 +1527,6 @@ class JavaScriptSemantics(object):
         return ast
 
     def CDATA_COMMENT(self, ast):  # noqa
-        return ast
-
-    def DOUBLE_STRING_CHARACTER(self, ast):  # noqa
-        return ast
-
-    def SINGLE_STRING_CHARACTER(self, ast):  # noqa
-        return ast
-
-    def ESCAPE_SEQUENCE(self, ast):  # noqa
-        return ast
-
-    def CHARACTER_ESCAPE_SEQUENCE(self, ast):  # noqa
-        return ast
-
-    def HEX_ESCAPE_SEQUENCE(self, ast):  # noqa
-        return ast
-
-    def UNICODE_ESCAPE_SEQUENCE(self, ast):  # noqa
-        return ast
-
-    def EXTENDED_UNICODE_ESCAPE_SEQUENCE(self, ast):  # noqa
-        return ast
-
-    def SINGLE_ESCAPE_CHARACTER(self, ast):  # noqa
-        return ast
-
-    def NON_ESCAPE_CHARACTER(self, ast):  # noqa
-        return ast
-
-    def ESCAPE_CHARACTER(self, ast):  # noqa
-        return ast
-
-    def LINE_CONTINUATION(self, ast):  # noqa
-        return ast
-
-    def HEX_DIGIT(self, ast):  # noqa
-        return ast
-
-    def DECIMAL_INTEGER_LITERAL(self, ast):  # noqa
-        return ast
-
-    def EXPONENT_PART(self, ast):  # noqa
-        return ast
-
-    def IDENTIFIER_PART(self, ast):  # noqa
-        return ast
-
-    def IDENTIFIER_START(self, ast):  # noqa
-        return ast
-
-    def UNICODE_LETTER(self, ast):  # noqa
-        return ast
-
-    def UNICODE_COMBINING_MARK(self, ast):  # noqa
-        return ast
-
-    def UNICODE_DIGIT(self, ast):  # noqa
-        return ast
-
-    def UNICODE_CONNECTOR_PUNCTUATION(self, ast):  # noqa
         return ast
 
     def REGULAR_EXPRESSION_CHAR(self, ast):  # noqa
