@@ -49,9 +49,14 @@
 @@keyword :: yield
 
 
+start
+    =
+    @:program $
+    ;
+
 program
     =
-    [source_elements] $
+    source_elements
     ;
 
 
@@ -353,13 +358,13 @@ last_formal_parameter_arg
 
 function_body
     =
-    [source_elements]
+    source_elements
     ;
 
 
 source_elements
     =
-    {source_element}+
+    {source_element}
     ;
 
 
