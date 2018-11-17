@@ -9,21 +9,18 @@ import sandbojs
 from .data import data_paths
 
 
+testdata = data_paths()
+
 @pytest.fixture()
 def parser():
     return sandbojs.parser()
 
 
-@pytest.fixture()
-def datapaths():
-    return data_paths()
-
-
-def test_parse(parser, datapaths):
-    for path in datapaths:
-        with path.open() as f:
-            contents = f.read()
-        try:
-            parser.parse(contents)
-        except TatSuException as e:
-            pytest.fail(str(e))
+@pytest.mark.parametrize('filepath', testdata)
+def test_parse(parser, filepath):
+    with filepath.open() as f:
+        code = f.read()
+    try:
+        parser.parse(code)
+    except TatSuException as e:
+        pytest.fail('%s on %s', str(e), filepath)

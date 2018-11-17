@@ -7,4 +7,4 @@ from pathlib import Path
 DATA_PATH = Path(pkg_resources.resource_filename(__name__, ''))
 
 def data_paths():
-    return DATA_PATH.glob('*.js')
+    return list(DATA_PATH.glob('**/*.js'))
