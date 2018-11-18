@@ -2,4 +2,4 @@
 from __future__ import absolute_import, division, unicode_literals, print_function
 
 import sys
-sys.path.insert(0, '.')
+sys.path.insert(0, '.')  # noqa

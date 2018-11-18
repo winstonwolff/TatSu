@@ -11,6 +11,7 @@ from .data import data_paths
 
 testdata = data_paths()
 
+
 @pytest.fixture()
 def parser():
     return sandbojs.parser()
