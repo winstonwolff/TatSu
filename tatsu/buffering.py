@@ -231,9 +231,6 @@ class Buffer(object):
                 self._comment_index[n].inline = []
             n -= 1
 
-        if cmm or eolcmm:
-            print('COMMENTS', cmm, eolcmm)
-
         return CommentInfo(cmm, eolcmm)
 
     def _index_comments(self, comments, selector):
