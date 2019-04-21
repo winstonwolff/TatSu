@@ -56,9 +56,11 @@ directive
     ;
 
 
+(* this is unused 1 *)
 keywords
+(* this is unused 2 *)
     =
-    { keywords }+
+    { keywords }+  # see: keyword
     ;
 
 

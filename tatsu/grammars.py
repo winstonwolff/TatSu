@@ -158,10 +158,13 @@ class Model(Node):
         if not comments:
             return ''
 
+        comments = [c.replace('(*', '').replace('*)', '').strip() for c in comments]
+        eol = [c.strip().lstrip('#').strip() for c in eol]
+
         return '\n'.join(
-            '(* %s *)\n' % '\n'.join(c).replace('(*', '').replace('*)', '').strip()
-            for c in comments
-        )
+            '# ' + c
+            for c in (comments + eol)
+        ) + '\n'
 
     def nodecount(self):
         return 1
@@ -415,9 +418,9 @@ class Sequence(Model):
         return 1 + sum(s.nodecount() for s in self.sequence)
 
     def _to_str(self, lean=False):
-        comments = self.comments_str()
         seq = [ustr(s._to_str(lean=lean)) for s in self.sequence]
         single = ' '.join(seq)
+        comments = self.comments_str()
         if len(single) <= PEP8_LLEN and len(single.splitlines()) <= 1:
             return comments + single
         else:
@@ -819,7 +822,6 @@ class Rule(Decorator):
             return urepr(p)
 
     def _to_str(self, lean=False):
-        comments = self.comments_str()
         if lean:
             params = ''
         else:
@@ -846,6 +848,7 @@ class Rule(Decorator):
 
         base = ' < %s' % ustr(self.base.name) if self.base else ''
 
+        comments = self.comments_str()
         return trim(self.str_template).format(
             name=self.name,
             base=base,

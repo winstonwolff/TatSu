@@ -32,7 +32,7 @@ class Buffer(object):
                  eol_comments_re=None,
                  ignorecase=False,
                  nameguard=None,
-                 comment_recovery=False,
+                 comment_recovery=True,
                  namechars='',
                  **kwargs):
         text = ustr(text)
@@ -215,21 +215,24 @@ class Buffer(object):
             return CommentInfo([], [])
 
         n = self.posline(p)
-        if n >= len(self._comment_index):
+        if n == 0 or n >= len(self._comment_index):
             return CommentInfo([], [])
 
-        eolcmm = []
-        if n < len(self._comment_index):
-            eolcmm = self._comment_index[n].eol
-            if clear:
-                self._comment_index[n].eol = []
+        eolcmm = self._comment_index[n].eol
+        if clear:
+            self._comment_index[n].eol = []
 
         cmm = []
+        while n >= 0 and not self._comment_index[n].inline:
+            n -= 1
         while n >= 0 and self._comment_index[n].inline:
-            cmm.insert(0, self._comment_index[n].inline)
+            cmm = self._comment_index[n].inline + cmm
             if clear:
                 self._comment_index[n].inline = []
             n -= 1
+
+        if cmm or eolcmm:
+            print('COMMENTS', cmm, eolcmm)
 
         return CommentInfo(cmm, eolcmm)
 
@@ -242,8 +245,10 @@ class Buffer(object):
                 previous.extend(comments)
 
     def _eat_regex(self, regex):
-        if regex is not None:
-            return list(takewhile(identity, imap(self.matchre, repeat(regex))))
+        if regex is None:
+            return []
+
+        return list(takewhile(identity, imap(self.matchre, repeat(regex))))
 
     def eat_whitespace(self):
         return self._eat_regex(self.whitespace_re)
