@@ -443,14 +443,28 @@ class ParseContext:
     def _memoization(self):
         return self.memoize_lookaheads or self._lookahead == 0
 
+    def _current_rule_stack(self):
+        stack = ' ' + '.' * len(self._rule_stack) + self._rule_stack[-1].name
+        return stack
+
     def _rulestack(self):
         rulestack = map(lambda r: r.name, reversed(self._rule_stack))
-        stack = self.trace_separator.join(rulestack)
+        # !!! Winston changed:
+        stack = ' ' + '.' * len(self._rule_stack) + self.trace_separator.join(rulestack)
+        # !!!
         if max(len(s) for s in stack.splitlines()) > self.trace_length:
             stack = stack[:self.trace_length]
             stack = stack.rsplit(self.trace_separator, 1)[0]
             stack += self.trace_separator
+            stack += '…'
+        #  if max(len(s) for s in stack.splitlines()) > self.trace_length:
+        #      stack = stack[:self.trace_length]
+        #      stack = stack.rsplit(self.trace_separator, 1)[0]
+        #      stack += self.trace_separator
         return stack
+
+    def _current_rule(self):
+        return self._rule_stack[-1].name
 
     def _find_rule(self, name):
         self._error(name, exclass=FailedRef)
@@ -488,17 +502,26 @@ class ParseContext:
             if lookahead:
                 lookahead = '\n' + lookahead
             self._trace(
-                '%s %s%s%s',
-                event + self._rulestack(),
+                '    %s %s pos:%s%s',
+                color.Style.DIM + repr(lookahead) + color.Style.RESET_ALL,
+                event + self._current_rule_stack(),
+                #  event + self._rulestack(),
                 self._tokenizer.lookahead_pos(),
                 color.Style.DIM + fname,
-                color.Style.NORMAL + lookahead +
-                color.Style.RESET_ALL,
                 end=''
             )
+            #  self._trace(
+            #      '%s %s%s%s',
+            #      event + self._rulestack(),
+            #      self._tokenizer.lookahead_pos(),
+            #      color.Style.DIM + fname,
+            #      color.Style.NORMAL + lookahead + color.Style.RESET_ALL,
+            #      end=''
+            #  )
 
     def _trace_entry(self):
-        self._trace_event(color.Fore.YELLOW + color.Style.BRIGHT + C_ENTRY)
+        self._trace_event(color.Fore.YELLOW + color.Style.DIM + C_ENTRY)
+        #  self._trace_event(color.Fore.YELLOW + color.Style.BRIGHT + C_ENTRY)
 
     def _trace_success(self):
         self._trace_event(color.Fore.GREEN + color.Style.BRIGHT + C_SUCCESS)
@@ -507,10 +530,12 @@ class ParseContext:
         if isinstance(ex, FailedLeftRecursion):
             self._trace_recursion()
         else:
-            self._trace_event(color.Fore.RED + color.Style.BRIGHT + C_FAILURE)
+            self._trace_event(color.Fore.RED + color.Style.DIM + C_FAILURE)
+            #  self._trace_event(color.Fore.RED + color.Style.BRIGHT + C_FAILURE)
 
     def _trace_recursion(self):
-        self._trace_event(color.Fore.RED + color.Style.BRIGHT + C_RECURSION)
+        self._trace_event(color.Fore.RED + color.Style.DIM + C_RECURSION)
+        #  self._trace_event(color.Fore.RED + color.Style.BRIGHT + C_RECURSION)
 
     def _trace_cut(self):
         self._trace_event(color.Fore.MAGENTA + color.Style.BRIGHT + C_CUT)
@@ -523,23 +548,31 @@ class ParseContext:
             name = '/%s/' % name if name else ''
 
             if not failed:
-                fgcolor = color.Fore.GREEN + C_SUCCESS
+                fgcolor = color.Fore.GREEN + color.Style.NORMAL
+                status = "MATCHES"
             else:
-                fgcolor = color.Fore.RED + C_FAILURE
+                fgcolor = color.Fore.RED + color.Style.DIM
+                status = "does not match"
 
             lookahead = self._tokenizer.lookahead().rstrip()
             if lookahead:
-                lookahead = '\n' + lookahead
+                #  lookahead = '\n' + lookahead
+                lookahead = ' lookahead: ' + lookahead
 
             self._trace(
-                color.Style.BRIGHT + fgcolor + "'%s' %s%s%s",
-                token,
-                name,
-                color.Style.DIM + fname,
-                color.Style.NORMAL + lookahead +
-                color.Style.RESET_ALL,
+                f"{color.Style.NORMAL}{fgcolor}{status} {repr(token)} {self._rulestack()} {name}{fname}"
+                f"{lookahead}{color.Style.RESET_ALL}",
                 end=''
             )
+            #  self._trace(
+            #      color.Style.BRIGHT + fgcolor + "'%s' %s%s%s",
+            #      token,
+            #      name,
+            #      color.Style.DIM + fname,
+            #      color.Style.NORMAL + lookahead +
+            #      color.Style.RESET_ALL,
+            #      end=''
+            #  )
 
     def _make_exception(self, item, exclass=FailedParse):
         rulestack = list(map(lambda r: r.name, self._rule_stack))
